@@ -13,6 +13,7 @@ requires = ["python_gitlab",
 "gnupg",
 "python_ldap",
 "PyYAML"]
+description-file = "README.md"
 
 [tool.flit.scripts]
 particleldapchangemail      = "ldapKIT.particleldapchangemail:run"
