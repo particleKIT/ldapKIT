@@ -11,6 +11,11 @@ A collection of python scripts that act as a wrapper/cli for the python-ldap lib
 
 All scripts provide ``--help``, ``--verbose`` and ``--dryrun`` flags.
 
+# Install
+```
+pip install ldapKIT
+```
+
 # User add/delete
 
 To add/delete users, you can use the scripts: ``particleldapuseradd`` and ``particleldapuserdel -–user NAME``.  
