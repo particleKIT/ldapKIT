@@ -8,7 +8,6 @@ author = "Martin Gabelmann"
 author-email = "martin@gabelmann.biz"
 home-page = "https://github.com/particleKIT/ldapKIT.git"
 classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
-requires-python="2.7"
 requires = ["python_gitlab",
 "xkcdpass",
 "gnupg",
