@@ -1,0 +1,23 @@
+[build-system]
+build-backend = "flit.buildapi"
+requires = ["flit"]
+
+[tool.flit.metadata]
+module = "ldapKIT"
+author = "Martin Gabelmann"
+author-email = "martin@gabelmann.biz"
+home-page = "https://github.com/particleKIT/ldapKIT.git"
+classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
+requires-python="2.7"
+requires = ["python_gitlab",
+"xkcdpass",
+"gnupg",
+"python_ldap",
+"PyYAML"]
+
+[tool.flit.scripts]
+particleldapchangemail      = "ldapKIT.particleldapchangemail:run"
+particleldapgroup           = "ldapKIT.particleldapgroup:run"
+particleldapresetpassword   = "ldapKIT.particleldapresetpassword:run"
+particleldapuseradd         = "ldapKIT.particleldapuseradd:run"
+particleldapuserdel         = "ldapKIT.particleldapuserdel:run"
