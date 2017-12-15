@@ -1,0 +1,117 @@
+---
+
+# Perform some config checks
+- hosts: all
+  tags: ['all', 'always']
+  vars:
+    host_configured: False
+  tasks:
+    - name: Load config from file
+      include_vars: config.yml
+    - name: reload user chache
+      service:
+          name: nscd
+          state: restarted
+    - name: check for uid
+      fail:
+        msg: "No uid given!"
+      when: uid is not defined
+    - name: check for gid
+      fail:
+        msg: "No vaild gid given!"
+      when: gid is not defined or gid not in user_main_groups
+    - name: check if host is configured for given group
+      set_fact:
+        host_configured: True
+      when: 'item.host in ansible_fqdn'
+      with_items: "{{user_main_groups[gid]['machine_dir_map']}}"
+    - name: fail if host is not configured for given group
+      fail:
+        msg: 'Host "{{ansible_fqdn}}" is not configured for group "{{gid}}"'
+      when: not host_configured
+
+# check for dir operations
+- hosts: all
+  tags: ['delete', 'create']
+  tasks:
+    - name: fail when no dir index is given
+      fail:
+        msg: "No dir index from list user_main_groups['{{gid}}']['machine_dir_map'] given!"
+      when: not dir or dir|int(-1) == "-1"
+
+    - set_fact:
+        dir_info: "{{user_main_groups[gid]['machine_dir_map'][dir|int]}}"
+
+    - name: fail when dir does not match host
+      fail:
+        msg: "{{dir_info['dir']}} is configured for {{dir_info['host']}}, not for {{ansible_fqdn}}!"
+      when: not dir_info['host'] in ansible_fqdn
+
+# dir deletion
+- hosts: all
+  tags: ['delete', 'tagged']
+  tasks:
+    - name: check if dir exists
+      stat:
+        path: "{{dir_info['dir']}}"
+      register: dircheck
+
+    - name: check if archive already exists
+      stat:
+        path: "{{dir_info['archive']}}"
+      register: archivecheck
+      failed_when: archivecheck.stat.exists == true
+
+    - name: Ask for confirmation
+      pause:
+        prompt: "Confirm archiving {{dir_info['dir']}} on {{ansible_fqdn}} to {{dir_info['archive']}}.  Press return to continue. Press Ctrl+c to abort"
+      when: not noninteractive|default(false) and dircheck.stat.exists == true
+
+    - name: Archive dirs
+      archive:
+        dest: "{{dir_info['archive']}}"
+        path: "{{dir_info['dir']}}"
+        remove: False
+        group: root
+        owner: root
+        mode: 0600
+        format: gz
+      register: archiveresult
+      when: dircheck.stat.exists == true
+
+    - name: check if some files were missing
+      fail: "Some files: {{archiveresult.missing}} are missing in the tarball!"
+      when: dircheck.stat.exists == true and archiveresult.missing
+
+    - name: Ask for confirmation
+      pause:
+        prompt: "Confirm deletion of {{dir_info['dir']}} on {{ansible_fqdn}} (check if archiving was complete!).  Press return to continue. Press Ctrl+c to abort"
+      when: not noninteractive|default(false)
+
+    - name: Remove dirs
+      file:
+        path: "{{dir_info['dir']}}"
+        state: absent
+      when: archiveresult.changed
+
+# dir creation
+- hosts: all
+  tags: ['create', 'tagged']
+  tasks:
+    - name: check if dir already exists
+      stat:
+        path: "{{dir_info['dir']}}"
+      register: dircheck
+      failed_when: dircheck.stat.exists == true
+
+    - name: Create dir
+      file:
+        path: "{{dir_info['dir']}}"
+        state: directory
+        owner: "{{uid}}"
+        group: "{{gid}}"
+        mode: "0700"
+
+    - name: set quota
+      command: "setquota -u {{uid}} {{dir_info['quota']}} {{(dir_info['quota']|float * 1.2)|int}} 0 0 -a"
+      when: "'quota' in dir_info"

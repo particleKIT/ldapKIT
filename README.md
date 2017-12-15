@@ -15,7 +15,7 @@ All scripts provide ``--help``, ``--verbose`` and ``--dryrun`` flags.
 
 To add/delete users, you can use the scripts: ``particleldapuseradd`` and ``particleldapuserdel -–user NAME``.  
 There is also the functionality to search for users that are inactive for ``n`` days (inactive means: last password change older than  ``m`` days) and delete them with ``particleldapuserdel –-cleanup``.  
-The userdel script does not only remove the ldap user but is also able to run post-deletion tasks via ansible e.g. to backup user directories.  
+The userdel script does not only remove the ldap user but is also able to run post-deletion tasks via ansible e.g. to backup user directories.
   
 # Group add/delete/modify
 
@@ -48,5 +48,5 @@ There is the script ``particleldapchangeemail`` which changes the email of an us
   * GitLab account (which somehow does not update its database when an ldap account changes its email)
   * and removes/adds its old/new email to a configured mailing list.
 
-# Passwordreset
-``parti
+# Example configuration
+See the [config.yml](./example/config.yml) for an example configuration which uses the full functionality. Also see the [userdir.yml](./example/userdir.yml) which is an ansible playbook invoked by ``particleldapuser{add,del}`` to create/archive user dirs on foregin file servers (set in the config.yml).

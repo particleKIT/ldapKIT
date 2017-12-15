@@ -1,0 +1,72 @@
+---
+ldap_host: "ldaps://ldap.example.com"
+ldap_realm: "dc=users,dc=example,dc=com"
+
+admin_dn: "cn=ldapadmin,dc=users,dc=example,dc=com"
+admin_pw: '/path/to/gpg/encrypted/pw.gpg'
+# admin_pw: 'plaintextpw'
+
+gitlab_api_token: '/path/to/gpg/encrypted/api_key.gpg'
+# gitlab_api_token: 'plaintextkey'
+gitlab_url: 'https://git.example.com/'
+
+logdir: '/var/log/ldapuserscripts'
+
+# allowed id range for users/groups
+id_range:
+    uid:
+        max: 3000
+        min: 1000
+        unmanaged: 4000
+    gid:
+        max: 3000
+        min: 1000
+        unmanaged: 4000
+
+user_main_groups: # define default groups
+    groupone: # group name
+        machine_dir_map: # in case of central file servers user dirs and quota are set automatically via ansible
+            - {host: 'fileserver1', dir: '/srv/nfs/users/groupone/{{uid}}', quota: '{{20*1024**2}}', archive: '/archive/{{uid}}.tar.gz'}
+            - {host: 'fileserver2', dir: '/srv/nfs/scratch/{{uid}}',        quota: '{{10*1024**2}}' }
+        mailinglist:
+            host: 'sympa@mail,.example.com'
+            admin: "admin@example.com"
+            list: "groupone"
+        home: '/home/groupone/{{uid}}'
+    grouptwo:
+        machine_dir_map:
+            - {host: 'fileserver1', dir: '/srv/nfs/users/grouptwo/{{uid}}', quota: '{{20*1024**2}}', archive: '/archive/{{uid}}.tar.gz'}
+            - {host: 'fileserver2', dir: '/srv/nfs/scratch/{{uid}}',        quota: '{{10*1024**2}}' }
+        mailinglist:
+            host: 'sympa@mail.example.com'
+            admin: "admin@example.com"
+            list: "grouptwo"
+        home: '/home/grouptwo/{{uid}}'
+    guest:
+        machine_dir_map:
+            - {host: 'fileserver1', dir: '/srv/nfs/guests/{{uid}}', quota: '{{5*1024**2}}'}
+        home: '/home/guests/{{uid}}'
+
+default_group: guest
+
+inactive_after_shadowLastChange_days: 1390
+max_user_del_noninteractive: 5 # this prevents cronjobs going crazy in non-interactive mode
+
+# config for ansible invocations
+ansible:
+    userdir_delete:
+        playbook: 'userdir.yml' # creates/deletes user directories
+        extra_args: ['--tags=delete']
+    userdir_create:
+        playbook: 'userdir.yml'
+        extra_args: ['--tags=create']
+
+# email settings for welcom mail
+email_from: 'admin@mail.example.com'
+email_smtp_host: 'localhost'
+email_welcome_subject: 'Welcome!'
+email_welcome_text: |
+  Dear {{givenName}} {{sn}},
+
+  Your account name is {{uid}}.
+  Best regards
