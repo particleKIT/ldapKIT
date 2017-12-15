@@ -1,3 +1,4 @@
 *.pyc
 *.retry
 __pycache__/*
+dist/*
