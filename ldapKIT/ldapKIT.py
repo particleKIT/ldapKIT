@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-"Collection of useful scripts for ldap based user management."
+#!/usr/bin/env python3
 import base64
 import ldap
 import os
@@ -8,7 +7,6 @@ import sys
 import hashlib
 import logging
 from email.utils import parseaddr
-from config import Config
 from gnupg import GPG
 from distutils.util import strtobool
 from datetime import datetime
@@ -16,7 +14,7 @@ from xkcdpass import xkcd_password as xp
 import gitlab
 import smtplib
 
-__version__ = '1.0'
+from .config import Config
 
 class Connection:
     def __init__(self,configfile="config.yml", gpg_passphrase=None, dryrun=None):
@@ -76,10 +74,10 @@ class Connection:
             logging.error("User does not exist.")
             return False
         try:
+            r = dict(map(lambda u: (u[0], u[1][0].decode('utf-8')) if len(u[1]) == 1 else (u[0], [f.decode("utf-8") for f in u[1]]), user[0][1].items()))
             if len(attr) > 0:
-                return { a : user[0][1][a][0] for a in attr }
-            else:
-                return dict(map(lambda (attr,val): (attr,val) if len(val) > 1 else (attr,val[0]), user[0][1].iteritems()))
+                r = { a : r.get(a,None) for a in attr }
+            return r
         except:
             raise Exception("The LDAP search return format was unexpected.")
 
@@ -95,7 +93,7 @@ class Connection:
         return gid
 
     def get_group(self, gid):
-        res = self.search('ou=Group',"(gidNumber=%s)" % gid, ['cn'])
+        res = self.search('ou=Group',"(gidNumber=%s)" % str(gid), ['cn'])
         if res and len(res) == 1:
             try:
                 return res[0][1]['cn'][0]
@@ -135,7 +133,7 @@ class Connection:
         users_dead  = defaultdict(list)
         users_alive = []
         groups_dead = []
-        for group, users in groups_members.iteritems():
+        for group, users in groups_members.items():
             groupempty = True
             for user in users:
                 if user in users_alive:
@@ -163,7 +161,7 @@ class Connection:
         else:
             if not yesno('Proceed?', default='y'):
                 return False
-        for user,groups in users_dead.iteritems():
+        for user,groups in users_dead.items():
             for group in groups:
                 dn = "cn=%s,ou=Group," % group + self.config['ldap_realm']
                 mod_attrs = [(ldap.MOD_DELETE, 'member', user)]
@@ -193,7 +191,7 @@ class Group():
             logging.error("Group name not unique.")
             self.loaded = False
         else:
-            self.attr = dict(map(lambda (attr,val): (attr,val) if len(val) > 1 else (attr,val[0]), res[0][1].iteritems()))
+            self.attr = dict(map(lambda r: (r[0], r[1][0].decode('utf-8')) if len(r[1]) == 1 else (r[0], [f.decode("utf-8") for f in r[1]]), res[0][1].items()))
             self.loaded = True
             logging.info('Loaded group ' + self.group)
         return self.loaded

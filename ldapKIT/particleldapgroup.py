@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
-import ldapKIT
 import logging
+
+from . import ldapKIT
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -66,6 +67,3 @@ def run():
             log = log + '(failed)'
             print('An error occured (try running with -v for more output).')
     ldapKIT.log(c.config['logdir'] + '/group.log', log)
-
-if __name__ == "__main__":
-    run()

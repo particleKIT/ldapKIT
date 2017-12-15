@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import sys
-import ldapKIT
-from ldapKIT import yesno
 import logging
+
+from . import ldapKIT
 
 parser = argparse.ArgumentParser(description='change users email')
 
@@ -42,6 +42,8 @@ def run():
 
     # get users mail
     try:
+        from pprint import pprint
+        pprint(user.attr)
         mailinglist = c.config['user_main_groups'][user.group]['mailinglist']
     except KeyError:
         logging.error('No mailinglist for group %s configured!' % user.group)
@@ -56,7 +58,7 @@ def run():
 
     # change users email
     if not args.dryrun and \
-            yesno("change email {}->{} of user {}?".format(oldmail, args.mail, args.user), default='y') and \
+            ldapKIT.yesno("change email {}->{} of user {}?".format(oldmail, args.mail, args.user), default='y') and \
             user.change_email(args.mail):
         print("Mail was changed to %s." % args.mail)
         ldapKIT.log(logfile, "changed mail: {} -> {}".format(oldmail, args.mail))
@@ -65,21 +67,21 @@ def run():
 
     # remove old mail from mailing list
     if oldmail:
-        if yesno("remove old email {} from {} mailing list?".format(oldmail, mailinglist['list']),default='y'):
+        if ldapKIT.yesno("remove old email {} from {} mailing list?".format(oldmail, mailinglist['list']),default='y'):
             if args.dryrun:
                 print('dry run enabled')
             else:
                 ldapKIT.delfromlist(oldmail, mailinglist)
                 ldapKIT.log(logfile, "removed {} from list {}".format(oldmail, mailinglist['list']))
 
-        if yesno("add new email {} to {} mailing list?".format(args.mail, mailinglist['list']), default='y'):
+        if ldapKIT.yesno("add new email {} to {} mailing list?".format(args.mail, mailinglist['list']), default='y'):
             if args.dryrun:
                 print('dry run enabled')
             else:
                 ldapKIT.addtolist(args.mail, mailinglist)
                 ldapKIT.log(logfile, "added {} to list {}".format(args.mail, mailinglist['list']))
 
-    if 'gitlab_url' in c.config and yesno("Change mail of %ss GitLab account?" % args.user, default='y'):
+    if 'gitlab_url' in c.config and ldapKIT.yesno("Change mail of %ss GitLab account?" % args.user, default='y'):
         gl = ldapKIT.gitlab_connection(c.config['gitlab_url'], c.config['gitlab_api_token'])
         if not gl:
             sys.exit(1)
@@ -110,5 +112,3 @@ def run():
                 print("An error occured: " + str(e))
 
     print("done.")
-if __name__ == "__main__":
-    run()

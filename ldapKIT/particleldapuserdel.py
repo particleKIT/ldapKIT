@@ -1,11 +1,12 @@
-#!/usr/bin/env python
-import ldapKIT
+#!/usr/bin/env python3
 import sys
 import logging
 import argparse
 from subprocess import check_call, CalledProcessError
 from distutils.spawn import find_executable
 from time import time
+
+from . import ldapKIT
 
 def remove_user(c,args):
     log = 'USERDELETE ' + args.user + ': '
@@ -175,10 +176,7 @@ def run():
     c = ldapKIT.Connection(dryrun=args.dryrun)
 
     if args.user:
-        return remove_user(c, args)
+        rc = remove_user(c, args)
     elif args.cleanup:
-        return cleanup_users(c, args)
-
-if __name__ == "__main__":
-    rc = run()
+        rc = cleanup_users(c, args)
     sys.exit(rc)

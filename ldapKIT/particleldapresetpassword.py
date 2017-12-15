@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-import ldapKIT
+#!/usr/bin/env python3
 import logging
 import argparse
 from sys import exit
+
+from . import ldapKIT
 
 
 def parse_args():
@@ -37,6 +38,3 @@ def run():
     else:
         print("Password was not changed.")
         exit(1)
-
-if __name__ == "__main__":
-    run()

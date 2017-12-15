@@ -1,11 +1,12 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import argparse
 import re
-import ldapKIT
 import logging
 from subprocess import check_call, CalledProcessError
 from distutils.spawn import find_executable
 import sys
+
+from . import ldapKIT
 
 parser = argparse.ArgumentParser(description="Add user to Ldap and Infrastructure.")
 parser.add_argument('--user', '-u',
@@ -170,7 +171,7 @@ def run():
 
     if attr['mail'] and 'email_welcome_text' in ldapcon.config and not args.dryrun:
         welcome_mail = ldapcon.config['email_welcome_text'].replace('{{group}}', group)
-        for k,v in attr.iteritems():
+        for k,v in attr.items():
             welcome_mail = welcome_mail.replace('{{%s}}' % str(k), str(v))
         ldapKIT.mailsend(
                 ldapcon.config['email_from'],
@@ -224,6 +225,3 @@ def run():
             logging.error('Ansible failed. Try running the playbook manually.')
 
     ldapKIT.log(logfile, "add user: " + attr['uid'])
-
-if __name__ == "__main__":
-    run()
