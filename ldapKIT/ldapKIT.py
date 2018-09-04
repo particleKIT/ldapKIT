@@ -332,12 +332,6 @@ class User():
         if self.user != self.attr['uid']:
             logging.error('"uid" attribute must be set and match the username.')
             return (False, False)
-        elif not self.attr['gidNumber']:
-            logging.error('"gidNumber" attribute must be set.')
-            return (False, False)
-        elif not self.attr['sn']:
-            logging.info('"sn" attribute must be set.')
-            return (False, False)
 
         numuid = self.con.get_next_uid()
 
@@ -346,6 +340,7 @@ class User():
                              'posixAccount', 'top', 'shadowAccount']),
             ('uid', [str(self.attr['uid'])]),
             ('sn', [str(self.attr['sn'])]),
+            ('cn', [str(self.attr['cn'])]),
             ('shadowLastChange', ['0']),
             ('shadowMax', ['800']),
             ('shadowWarning', ['90']),
@@ -362,8 +357,9 @@ class User():
             add_record += [('gecos', [str(self.attr['gecos'])])]
         if 'homeDirectory' in self.attr and self.attr['homeDirectory'] != '':
             add_record += [('homeDirectory', [str(self.attr['homeDirectory'])])]
-        if 'cn' in self.attr and self.attr['cn'] != '':
-            add_record += [('cn', [str(self.attr['cn'])])]
+
+        # convert all entries to bytes
+        add_record = [ (k, [v.encode('utf-8') for v in vs]) for k,vs in add_record]
 
         try:
             if not self.con.dryrun:
