@@ -11,7 +11,8 @@ def parse_args():
     parser.add_argument('user',
                         help='username to reset password for')
     parser.add_argument('--verbose', '-v', action='count',
-                        help='verbosity level')
+                        help='verbosity level',
+                        default=0)
     parser.add_argument('--dryrun', '-d', action='store_true',
                         help='don\'t change anything.')
     args = parser.parse_args()

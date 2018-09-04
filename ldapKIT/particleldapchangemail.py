@@ -24,7 +24,8 @@ parser.add_argument('--dryrun',
                     help='don\'t write anything, print old and new mail')
 
 parser.add_argument('--verbose', '-v', action='count',
-                    help='add more ouput')
+                    help='add more ouput',
+                    default=0)
 
 def run():
     args = parser.parse_args()

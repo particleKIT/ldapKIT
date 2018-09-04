@@ -162,7 +162,8 @@ def run():
     parser.add_argument('--dryrun', action='store_true',
                         help='don\'t change anything.')
     parser.add_argument('--verbose', '-v', action='count',
-                        help='verbosity level')
+                        help='verbosity level',
+                        default=0)
     args = parser.parse_args()
 
     if args.verbose == 1:

@@ -27,7 +27,8 @@ parser.add_argument('--dryrun', '-d',
                     action='store_true',
                     help='Don\'t write anything.')
 parser.add_argument('--verbose', '-v', action='count',
-                    help='verbosity level')
+                    help='verbosity level',
+                    default=0)
 args = parser.parse_args()
 
 if args.verbose == 1:

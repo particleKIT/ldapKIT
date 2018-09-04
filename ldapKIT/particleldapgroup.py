@@ -24,7 +24,8 @@ def parse_args():
                         help='add more ouput')
 
     parser.add_argument('--dryrun', '-d', action='store_true',
-                        help='don\'t write anything')
+                        help='don\'t write anything',
+                        default=0)
 
     args = parser.parse_args()
     logging.getLogger().setLevel(logging.ERROR)
