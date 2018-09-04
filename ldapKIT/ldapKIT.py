@@ -7,7 +7,7 @@ import sys
 import hashlib
 import logging
 from email.utils import parseaddr
-from gnupg import GPG
+from pretty_bad_protocol.gnupg import GPG
 from distutils.util import strtobool
 from datetime import datetime
 from xkcdpass import xkcd_password as xp
@@ -470,13 +470,15 @@ def gen_pw():
     return raw_password
 
 def get_admin_pw(gpgfile,passphrase=None):
-    gpg = GPG()
-    stream = open(gpgfile, "rb")
-    pw = gpg.decrypt_file(stream, passphrase)
+    gpg = GPG(use_agent=True)
+    with open(gpgfile, 'rb') as f:
+        pw = gpg.decrypt_file(f, passphrase=passphrase)
     if pw.ok:
+        print(str(pw).strip())
         return str(pw).strip()
     else:
-        logging.error("Failed to encrypt password file!")
+        logging.error("Failed to encrypt password file!\n" + pw.stderr)
+        logging.error(pw.stderr)
         sys.exit(1)
 
 def addtolist(email, mailinglist):
