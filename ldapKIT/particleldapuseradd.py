@@ -56,7 +56,7 @@ def ask_input(question,
         else:
             sys.stdout.write(question + " [%s] " % defaultval)
         try:
-            userinput = raw_input()
+            userinput = input()
         except KeyboardInterrupt:
             print('\naborting...')
             sys.exit(1)

@@ -7,7 +7,8 @@ import sys
 import hashlib
 import logging
 from email.utils import parseaddr
-from pretty_bad_protocol.gnupg import GPG
+# from pretty_bad_protocol.gnupg import GPG
+from subprocess import Popen, PIPE, STDOUT
 from distutils.util import strtobool
 from datetime import datetime
 from xkcdpass import xkcd_password as xp
@@ -442,7 +443,7 @@ def yesno(question, default='n'):
     alternative = 'y' if not strtobool(default) else 'n'
     bracket = " [{}/{}] ".format(default.upper(), alternative)
     try:
-        answer = raw_input(question + bracket) or default
+        answer = input(question + bracket) or default
         try:
             boolish = strtobool(answer)
         except ValueError:
@@ -469,6 +470,7 @@ def gen_pw():
     raw_password = xp.generate_xkcdpassword(mywords, numwords=3, delimiter=' ')
     return raw_password
 
+""" python-gnupg still has problems with python3
 def get_admin_pw(gpgfile,passphrase=None):
     gpg = GPG(use_agent=True)
     with open(gpgfile, 'rb') as f:
@@ -478,8 +480,22 @@ def get_admin_pw(gpgfile,passphrase=None):
         return str(pw).strip()
     else:
         logging.error("Failed to encrypt password file!\n" + pw.stderr)
-        logging.error(pw.stderr)
         sys.exit(1)
+"""
+def get_admin_pw(gpgfile, passphrase=None):
+    cmd = ['gpg', '-q', '-d', gpgfile]
+    if passphrase:
+        cmd.append('--passphrase')
+        cmd.append(passphrase)
+    proc = Popen(cmd, stderr=STDOUT, stdout=PIPE)
+    pipes = proc.communicate(timeout=2)
+    stdout = pipes[0].decode('utf8').strip() if pipes[0] else ""
+    stderr = pipes[1].decode('utf8').strip() if pipes[1] else ""
+    rc = proc.poll()
+    if rc != 0:
+        logging.error("Failed to encrypt password file!\n" + stderr + "\n" + stdout)
+        sys.exit(1)
+    return stdout
 
 def addtolist(email, mailinglist):
     return sympa_helper(email, mailinglist, "ADD")
