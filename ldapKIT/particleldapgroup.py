@@ -5,7 +5,7 @@ import logging
 
 from . import ldapKIT
 
-def parse_args():
+def parser():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='cmd')
     create = subparsers.add_parser('create', help='create new group')
@@ -26,16 +26,18 @@ def parse_args():
     parser.add_argument('--dryrun', '-d', action='store_true',
                         help='don\'t write anything',
                         default=0)
-
-    args = parser.parse_args()
-    logging.getLogger().setLevel(logging.ERROR)
-    if args.verbose >= 1:
-        logging.getLogger().setLevel(logging.INFO)
-    return args
+    return parser
 
 def run():
-    args = parse_args()
+
+    args = parser().parse_args()
+    logging.getLogger().setLevel(logging.ERROR)
+    if args.verbose and args.verbose >= 1:
+        logging.getLogger().setLevel(logging.INFO)
     cmd = args.cmd
+    if not cmd:
+        parser().parse_args(['--help'])
+
     c = ldapKIT.Connection(dryrun=args.dryrun)
     log = None
     if args.dryrun:

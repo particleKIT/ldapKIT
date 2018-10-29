@@ -43,8 +43,6 @@ def run():
 
     # get users mail
     try:
-        from pprint import pprint
-        pprint(user.attr)
         mailinglist = c.config['user_main_groups'][user.group]['mailinglist']
     except KeyError:
         logging.error('No mailinglist for group %s configured!' % user.group)

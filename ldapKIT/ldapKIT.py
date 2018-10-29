@@ -23,7 +23,7 @@ class Connection:
         self.dryrun = dryrun
         if not self.config.load():
             sys.exit(1)
-        self.ldap = ldap.initialize(self.config['ldap_host'])
+        self.ldap = ldap.initialize(self.config['ldap_host'], bytes_mode=False)
         if str(self.config['admin_pw']).split('.')[-1] == 'gpg':
             admin_pw = get_admin_pw(self.config['admin_pw'], gpg_passphrase)
         else:
@@ -59,6 +59,8 @@ class Connection:
         return res
 
     def user_exists(self, user, dn=False):
+        if type(user) == bytes:
+            user = user.decode()
         if not dn:
             return self.search("ou=People", "(uid=%s)" % user)
         try:
@@ -164,7 +166,7 @@ class Connection:
                 return False
         for user,groups in users_dead.items():
             for group in groups:
-                dn = "cn=%s,ou=Group," % group + self.config['ldap_realm']
+                dn = "cn=%s,ou=Group," % group.decode() + self.config['ldap_realm']
                 mod_attrs = [(ldap.MOD_DELETE, 'member', user)]
                 if not self.dryrun:
                     self.ldap.modify_s(dn, mod_attrs)
@@ -253,7 +255,7 @@ class Group():
         member = []
         for user in users:
             if self.con.user_exists(user) or edit == ldap.MOD_DELETE:
-                member.append("uid=%s,ou=People," % user + self.con.config['ldap_realm'])
+                member.append(("uid=%s,ou=People," % user + self.con.config['ldap_realm']).encode('utf-8'))
             else:
                 logging.error('User ' + user + ' does not exist!')
         if len(member) == 0:
@@ -302,7 +304,7 @@ class User():
         self.attr = self.con.get_user_attr(self.user)
         if self.attr:
             if 'gidNumber' in self.attr:
-                self.group = self.con.get_group(self.attr['gidNumber'])
+                self.group = self.con.get_group(self.attr['gidNumber']).decode()
             self.loaded = True
             logging.info('Loaded user ' + self.user)
         return self.loaded
@@ -347,7 +349,7 @@ class User():
             ('shadowInactive', ['300']),
             ('loginShell', ['/bin/bash']),
             ('uidNumber', [str(numuid)]),
-            ('gidNumber', [str(self.attr['gidNumber'])]),
+            ('gidNumber', [self.attr['gidNumber']]),
         ]
         if 'mail' in self.attr and self.attr['mail'] != '':
             add_record += [('mail', [str(self.attr['mail'])])]
@@ -359,7 +361,7 @@ class User():
             add_record += [('homeDirectory', [str(self.attr['homeDirectory'])])]
 
         # convert all entries to bytes
-        add_record = [ (k, [v.encode('utf-8') for v in vs]) for k,vs in add_record]
+        add_record = [ (k, [v.encode('utf-8') if type(v) == str else v for v in vs]) for k,vs in add_record]
 
         try:
             if not self.con.dryrun:
@@ -431,7 +433,7 @@ class User():
         logging.info('Changing email: {}:{} -> {}:{}'.format(
             self.user, oldmail, self.user, mail)
             )
-        mod_attrs = [(ldap.MOD_REPLACE, 'mail', mail)]
+        mod_attrs = [(ldap.MOD_REPLACE, 'mail', mail.encode('utf-8'))]
         return self.edit(mod_attrs)
 
 # helper functions outside of connection class
