@@ -4,7 +4,7 @@ requires = ["flit"]
 
 [tool.flit.metadata]
 module = "ldapKIT"
-author = "Martin Gabelmann"
+author = "Martin Gabelmann, Robin Roth"
 author-email = "martin@gabelmann.biz"
 home-page = "https://github.com/particleKIT/ldapKIT.git"
 classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
