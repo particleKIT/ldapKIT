@@ -203,16 +203,16 @@ class Group():
         if self.con.group_exists(self.group):
             logging.error("Group already exists.")
             return False
-        numgid = str(self.con.get_next_gid())
+        numgid = str(self.con.get_next_gid()).encode()
         add_record = [
-            ('objectclass', ['groupOfNames', 'posixGroup']),
+            ('objectclass', [b'groupOfNames', b'posixGroup']),
             ('gidNumber', [numgid]),
-            ('cn', [self.group]),
+            ('cn', [self.group.encode()]),
         ]
         dns = []
         for user in users:
             if self.con.user_exists(user):
-                dns.append("uid=%s,ou=People," % user + self.con.config['ldap_realm'])
+                dns.append(("uid=%s,ou=People," % user + self.con.config['ldap_realm']).encode())
             else:
                 logging.error('User ' + user + ' does not exist! Wont be added to Group.')
         if len(dns) > 0:
