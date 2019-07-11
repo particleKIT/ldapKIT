@@ -128,6 +128,8 @@ def run():
     attr['sn'] = ask_input("last name: ", format="^[a-zA-Z ,.'-]+$") if not args.last else args.last
     attr['cn'] = '{} {}'.format(attr['sn'], attr['givenName'])
     attr['gecos'] = ",".join(filter(None, [attr['cn'], ask_input("room: "), ask_input("phone: ")])) if not args.comment else args.comment
+    attr['loginShell'] = ldapcon.config['user_main_groups'][group].get('loginShell', '/bin/bash')
+
     groups = ask_input(
             "additional groups\ncomma seperated, no blanks\nyou probably should add ssh: ",
             check_func=check_groups,

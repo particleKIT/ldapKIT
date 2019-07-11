@@ -347,7 +347,7 @@ class User():
             ('shadowMax', ['800']),
             ('shadowWarning', ['90']),
             ('shadowInactive', ['300']),
-            ('loginShell', ['/bin/bash']),
+            ('loginShell', [str(self.attr['loginShell'])]),
             ('uidNumber', [str(numuid)]),
             ('gidNumber', [self.attr['gidNumber']]),
         ]
