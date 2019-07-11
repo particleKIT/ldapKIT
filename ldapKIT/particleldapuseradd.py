@@ -174,13 +174,17 @@ def run():
         print('Skipping creation of mailling list membership (not configured).')
 
     if attr['mail'] and 'email_welcome_text' in ldapcon.config and not args.dryrun:
-        welcome_mail = ldapcon.config['email_welcome_text'].replace('{{group}}', group)
+        welcome_mail = ldapcon.config['user_main_groups'][group].get('email_welcome_text', ldapcon.config['email_welcome_text'])
+        subject = ldapcon.config['user_main_groups'][group].get('email_welcome_subject', ldapcon.config['email_welcome_subject'])
+
+        welcome_mail = welcome_mail.replace('{{group}}', group)
         for k,v in attr.items():
             welcome_mail = welcome_mail.replace('{{%s}}' % str(k), str(v))
+            subject = subject.replace('{{%s}}' % str(k), str(v))
         ldapKIT.mailsend(
                 ldapcon.config['email_from'],
                 attr['mail'],
-                ldapcon.config['email_welcome_subject'],
+                subject,
                 welcome_mail,
                 ldapcon.config['email_smtp_host']
                 )
