@@ -168,6 +168,7 @@ def run():
     try:
         mailinglist = ldapcon.config['user_main_groups'][group]['mailinglist']
     except KeyError:
+        mailinglist = False
         print('Skipping creation of mailling list membership (not configured).')
 
     if attr['mail'] and 'email_welcome_text' in ldapcon.config and not args.dryrun:

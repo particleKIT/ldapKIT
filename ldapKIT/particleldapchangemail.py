@@ -45,8 +45,8 @@ def run():
     try:
         mailinglist = c.config['user_main_groups'][user.group]['mailinglist']
     except KeyError:
-        logging.error('No mailinglist for group %s configured!' % user.group)
-        sys.exit(0)
+        mailinglist = False
+        logging.info('No mailinglist for group %s configured.' % user.group)
 
     if user.attr['mail']:
         oldmail = user.attr['mail']
@@ -65,7 +65,7 @@ def run():
         print("Mail was not changed.")
 
     # remove old mail from mailing list
-    if oldmail:
+    if oldmail and mailinglist:
         if ldapKIT.yesno("remove old email {} from {} mailing list?".format(oldmail, mailinglist['list']),default='y'):
             if args.dryrun:
                 print('dry run enabled')

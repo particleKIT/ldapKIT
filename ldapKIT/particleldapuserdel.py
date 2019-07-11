@@ -40,6 +40,7 @@ def remove_user(c,args):
     try:
         mailinglist = c.config['user_main_groups'][group]['mailinglist']
     except KeyError:
+        mailinglist = False
         print('Skipping deletion of mailling list membership (not configured).')
 
     # remove email from mailling list
