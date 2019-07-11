@@ -189,41 +189,43 @@ def run():
         else:
             print('(dryrun enabled)')
 
-    if 'ansible' not in ldapcon.config or \
+    runansible = 'ansible' in ldapcon.config
+    if not runansible or \
             'userdir_create' not in ldapcon.config['ansible'] or\
             'playbook' not in ldapcon.config['ansible']['userdir_create']:
-        logging.error('Ansible not configured for userdir creation')
-        sys.exit(1)
+        logging.info('Ansible not configured for userdir creation')
 
     ansible_exec = find_executable('ansible-playbook')
-    if not ansible_exec:
+    if runansible and not ansible_exec:
         logging.error('Ansible not installed (could not find ansible-playbook executable).')
-        sys.exit(1)
+        runansible = False
 
-    ansiblecmd = [ansible_exec, ldapcon.config['ansible']['userdir_create']['playbook']]
-    if 'extra_args' in ldapcon.config['ansible']['userdir_create']:
-        ansiblecmd.extend(ldapcon.config['ansible']['userdir_create']['extra_args'])
+    if runansible:
+        ansiblecmd = [ansible_exec, ldapcon.config['ansible']['userdir_create']['playbook']]
+        if 'extra_args' in ldapcon.config['ansible']['userdir_create']:
+            ansiblecmd.extend(ldapcon.config['ansible']['userdir_create']['extra_args'])
 
-    if args.dryrun:
-        ansiblecmd.append('--check')
-        print('Spawning Ansible with --check.')
+        if args.dryrun:
+            ansiblecmd.append('--check')
+            print('Spawning Ansible with --check.')
 
-    if args.verbose > 1:
-        ansiblecmd.append('-vvv')
+        if args.verbose > 1:
+            ansiblecmd.append('-vvv')
 
-    ansiblecmd.append('-e uid=' + attr['uid'])
-    ansiblecmd.append('-e gid=' + group)
+        ansiblecmd.append('-e uid=' + attr['uid'])
+        ansiblecmd.append('-e gid=' + group)
 
-    i = 0
-    for dirinfo in ldapcon.config['user_main_groups'][group]['machine_dir_map']:
-        ansibledir_arg = ['-e dir=' + str(i), '-i' + dirinfo['host'] + ',']
-        i += 1
-        if not ldapKIT.yesno("Create dir '%s' on %s?" % (dirinfo['dir'].replace('{{uid}}',attr['uid']), dirinfo['host']) , default="y"):
-            continue
-        logging.info('calling ' + ' '.join(ansiblecmd + ansibledir_arg))
-        try:
-            check_call(ansiblecmd + ansibledir_arg)
-        except CalledProcessError:
-            logging.error('Ansible failed. Try running the playbook manually.')
+    if runansible and ldapcon.config['user_main_groups'][group].get('machine_dir_map', None):
+        i = 0
+        for dirinfo in ldapcon.config['user_main_groups'][group]['machine_dir_map']:
+            ansibledir_arg = ['-e dir=' + str(i), '-i' + dirinfo['host'] + ',']
+            i += 1
+            if not ldapKIT.yesno("Create dir '%s' on %s?" % (dirinfo['dir'].replace('{{uid}}',attr['uid']), dirinfo['host']) , default="y"):
+                continue
+            logging.info('calling ' + ' '.join(ansiblecmd + ansibledir_arg))
+            try:
+                check_call(ansiblecmd + ansibledir_arg)
+            except CalledProcessError:
+                logging.error('Ansible failed. Try running the playbook manually.')
 
     ldapKIT.log(logfile, "add user: " + attr['uid'])
