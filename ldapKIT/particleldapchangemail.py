@@ -103,6 +103,7 @@ def run():
             try:
                 gitlab_user.email = args.mail
                 if not args.dryrun:
+                    gitlab_user.skip_reconfirmation = True
                     gitlab_user.save()
                     ldapKIT.log(logfile, "changed gitlab mail {} to {}".format(oldmail, args.mail))
                 else:
