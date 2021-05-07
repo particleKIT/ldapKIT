@@ -106,6 +106,11 @@ def run():
                     gitlab_user.skip_reconfirmation = True
                     gitlab_user.save()
                     ldapKIT.log(logfile, "changed gitlab mail {} to {}".format(oldmail, args.mail))
+                    print("""
+                    ATTENTION: changing emails in gitlab is currently not working/buggy
+                    (see https://github.com/python-gitlab/python-gitlab/issues/1137 for the current status).
+                    Please log-in as root at {} and change the mail manually.
+                    """ .format(c.config['gitlab_url']))
                 else:
                     print("dry run enabled")
             except Exception as e:
