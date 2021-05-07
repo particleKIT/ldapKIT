@@ -102,6 +102,8 @@ def run():
         if gitlab_user:
             try:
                 gitlab_user.email = args.mail
+                # alternatively: add as secondary email:
+                # gitlab_user.emails.create({'email': args.mail, 'skip_confirmation': 'true'})
                 if not args.dryrun:
                     gitlab_user.skip_reconfirmation = True
                     gitlab_user.save()
