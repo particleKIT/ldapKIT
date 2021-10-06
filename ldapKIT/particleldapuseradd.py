@@ -189,11 +189,14 @@ def run():
                 ldapcon.config['email_smtp_host']
                 )
 
-    if attr['mail'] and mailinglist and ldapKIT.yesno('Adding user %s to email list %s ?' % (attr['uid'], group), default='y'):
-        if not args.dryrun:
-            ldapKIT.addtolist(attr['mail'], mailinglist)
-        else:
-            print('(dryrun enabled)')
+    if not isinstance(mailinglist, list):
+        mailinglist = [mailinglist]
+    for ml in mailinglist:
+        if attr['mail'] and ml and ldapKIT.yesno('Adding user %s to email list %s ?' % (attr['uid'], group), default='y'):
+            if not args.dryrun:
+                ldapKIT.addtolist(attr['mail'], ml)
+            else:
+                print('(dryrun enabled)')
 
     runansible = 'ansible' in ldapcon.config
     if not runansible or \

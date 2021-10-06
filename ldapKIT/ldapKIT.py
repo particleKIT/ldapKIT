@@ -486,7 +486,7 @@ def get_admin_pw(gpgfile, passphrase=None):
         cmd.append('--passphrase')
         cmd.append(passphrase)
     proc = Popen(cmd, stderr=STDOUT, stdout=PIPE)
-    pipes = proc.communicate(timeout=2)
+    pipes = proc.communicate(timeout=20)
     stdout = pipes[0].decode('utf8').strip() if pipes[0] else ""
     stderr = pipes[1].decode('utf8').strip() if pipes[1] else ""
     rc = proc.poll()

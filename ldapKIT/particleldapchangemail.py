@@ -65,20 +65,23 @@ def run():
         print("Mail was not changed.")
 
     # remove old mail from mailing list
-    if oldmail and mailinglist:
-        if ldapKIT.yesno("remove old email {} from {} mailing list?".format(oldmail, mailinglist['list']),default='y'):
-            if args.dryrun:
-                print('dry run enabled')
-            else:
-                ldapKIT.delfromlist(oldmail, mailinglist)
-                ldapKIT.log(logfile, "removed {} from list {}".format(oldmail, mailinglist['list']))
+    if not isinstance(mailinglist, list):
+        mailinglist = [mailinglist]
+    for ml in mailinglist:
+        if oldmail and ml:
+            if ldapKIT.yesno("remove old email {} from {} mailing list?".format(oldmail, ml['list']),default='y'):
+                if args.dryrun:
+                    print('dry run enabled')
+                else:
+                    ldapKIT.delfromlist(oldmail, ml)
+                    ldapKIT.log(logfile, "removed {} from list {}".format(oldmail, ml['list']))
 
-        if ldapKIT.yesno("add new email {} to {} mailing list?".format(args.mail, mailinglist['list']), default='y'):
-            if args.dryrun:
-                print('dry run enabled')
-            else:
-                ldapKIT.addtolist(args.mail, mailinglist)
-                ldapKIT.log(logfile, "added {} to list {}".format(args.mail, mailinglist['list']))
+            if ldapKIT.yesno("add new email {} to {} mailing list?".format(args.mail, ml['list']), default='y'):
+                if args.dryrun:
+                    print('dry run enabled')
+                else:
+                    ldapKIT.addtolist(args.mail, ml)
+                    ldapKIT.log(logfile, "added {} to list {}".format(args.mail, ml['list']))
 
     if 'gitlab_url' in c.config and ldapKIT.yesno("Change mail of %ss GitLab account?" % args.user, default='y'):
         gl = ldapKIT.gitlab_connection(c.config['gitlab_url'], c.config['gitlab_api_token'])

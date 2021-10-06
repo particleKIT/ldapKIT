@@ -44,16 +44,19 @@ def remove_user(c,args):
         print('Skipping deletion of mailling list membership (not configured).')
 
     # remove email from mailling list
-    if not args.keepemail and email and mailinglist and\
-            (args.noninteractive or ldapKIT.yesno('Remove {} from email list {}?'.format(email, mailinglist['list']), default='y')):
-        if not args.dryrun:
-            log += ' Removed from email list' + mailinglist['list']
-            if ldapKIT.delfromlist(email, mailinglist):
-                print('OK')
-                log += '.'
-            else:
-                log += ' (failed).'
-                rc = 1
+    if not isinstance(mailinglist, list):
+        mailinglist = [mailinglist]
+    for ml in mailinglist:
+        if not args.keepemail and email and ml and\
+                (args.noninteractive or ldapKIT.yesno('Remove {} from email list {}?'.format(email, ml['list']), default='y')):
+            if not args.dryrun:
+                log += ' Removed from email list ' + ml['list']
+                if ldapKIT.delfromlist(email, mailinglist):
+                    print('OK')
+                    log += '.'
+                else:
+                    log += ' (failed).'
+                    rc = 1
 
     # backup/delete user dirs
     if not args.keepdirs and dirs and rc == 0 and\
