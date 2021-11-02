@@ -14,6 +14,7 @@ from datetime import datetime
 from xkcdpass import xkcd_password as xp
 import gitlab
 import smtplib
+import time
 
 from .config import Config
 
@@ -398,11 +399,21 @@ class User():
         try:
             if not self.con.dryrun:
                 self.con.ldap.passwd_s(self.dn, None, pw)
-            return pw
         except Exception as e:
             logging.error("Failed to change password: " + str(e))
             return False
-        return True
+
+        try:
+            self.reset_shadowLastChange()
+        except Exception as e:
+            logging.error("Failed to update shadowLastChange: " + str(e))
+
+        return pw
+
+    def reset_shadowLastChange(self):
+        value = int(time.time()/60/60/24)
+        logging.info('Setting shadowLastChange to {}'.format(value))
+        self.edit([(ldap.MOD_REPLACE, 'shadowLastChange', str(value).encode('ascii'))])
 
     def change_email(self, mail):
         if not self.loaded:
