@@ -23,6 +23,8 @@ parser.add_argument('--comment', '-c',
                     help='Additional Information, like room/phone')
 parser.add_argument('--groups', '-G',
                     help='additional groups of new user')
+parser.add_argument('--uidnumber', '-N',
+                    help='user id number')
 parser.add_argument('--dryrun', '-d',
                     action='store_true',
                     help='Don\'t write anything.')
@@ -129,6 +131,7 @@ def run():
     attr['cn'] = '{} {}'.format(attr['sn'], attr['givenName'])
     attr['gecos'] = ",".join(filter(None, [attr['cn'], ask_input("room: "), ask_input("phone: ")])) if not args.comment else args.comment
     attr['loginShell'] = ldapcon.config['user_main_groups'][group].get('loginShell', '/bin/bash')
+    uidnumber = None if not args.uidnumber else args.uidnumber
 
     groups = ask_input(
             "additional groups\ncomma seperated, no blanks\nyou probably should add ssh: ",
@@ -156,7 +159,7 @@ def run():
     """
     print('Adding user %s to Ldap:' % attr['uid'])
     user = ldapKIT.User(ldapcon, attr['uid'], exists=False)
-    userid, userpw = user.add(attr)
+    userid, userpw = user.add(attr, uidnumber=uidnumber)
     if not userid or not userpw:
         sys.exit(1)
     print('User id: ' + str(userid))

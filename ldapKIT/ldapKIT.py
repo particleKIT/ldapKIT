@@ -323,7 +323,7 @@ class User():
             return False
         return True
 
-    def add(self, attr={}):
+    def add(self, attr={}, uidnumber=None):
         if attr:
             self.attr = attr
         else:
@@ -336,7 +336,8 @@ class User():
             logging.error('"uid" attribute must be set and match the username.')
             return (False, False)
 
-        numuid = self.con.get_next_uid()
+        if uidnumber is None:
+            uidnumber = self.con.get_next_uid()
 
         add_record = [
             ('objectclass', ['person', 'organizationalperson', 'inetorgperson',
@@ -349,7 +350,7 @@ class User():
             ('shadowWarning', ['90']),
             ('shadowInactive', ['300']),
             ('loginShell', [str(self.attr['loginShell'])]),
-            ('uidNumber', [str(numuid)]),
+            ('uidNumber', [str(uidnumber)]),
             ('gidNumber', [self.attr['gidNumber']]),
         ]
         if 'mail' in self.attr and self.attr['mail'] != '':
@@ -369,7 +370,7 @@ class User():
                 self.con.ldap.add_s(self.dn, add_record)
                 self.load()
                 pw = self.setpw()
-                return (numuid, pw)
+                return (uidnumber, pw)
             else:
                 return (42, 'dryrunpw')
         except Exception as e:
