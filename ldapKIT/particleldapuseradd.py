@@ -195,7 +195,7 @@ def run():
     if not isinstance(mailinglist, list):
         mailinglist = [mailinglist]
     for ml in mailinglist:
-        if attr['mail'] and ml and ldapKIT.yesno('Adding user %s to email list %s ?' % (attr['uid'], group), default='y'):
+        if attr['mail'] and ml and ldapKIT.yesno('Adding user %s to email list %s ?' % (attr['uid'], ml['host']), default='y'):
             if not args.dryrun:
                 ldapKIT.addtolist(attr['mail'], ml)
             else:
