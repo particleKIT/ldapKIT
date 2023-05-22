@@ -51,7 +51,7 @@ def remove_user(c,args):
                 (args.noninteractive or ldapKIT.yesno('Remove {} from email list {}?'.format(email, ml['list']), default='y')):
             if not args.dryrun:
                 log += ' Removed from email list ' + ml['list']
-                if ldapKIT.delfromlist(email, mailinglist):
+                if ldapKIT.delfromlist(email, ml):
                     print('OK')
                     log += '.'
                 else:
